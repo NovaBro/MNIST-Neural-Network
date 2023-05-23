@@ -3,15 +3,19 @@ import InitialStart as IS
 import sys, math
 
 np.set_printoptions(suppress = True, precision = 3, threshold = sys.maxsize, linewidth = 1000)
-NodeValues = []
-A_to_Z_Values = []
-C_to_A_Values = []
-Z_to_C_Values = [] #A_Z * C_A
-lastC_to_A_Values = np.array([])
-#LLGradientW = np.array([])
-#LLGradientB = np.array([])
-LLGradientW = np.empty([0, IS.GradientNN[len(IS.GradientNN) - 1]["weight"].shape[1]])
-LLGradientB = np.empty([0, IS.GradientNN[len(IS.GradientNN) - 1]["bias"].shape[0]])
+NodeValues = [] #End nodes, aka output, and intermediate node values
+A_to_Z_Values = []# 0 or 1
+C_to_A_Values = []# how much intermediate layer nodes effect output
+Z_to_C_Values = [] #A_Z * C_A, keep whats already calculated for future calculations
+lastC_to_A_Values = np.array([])# Final output - the correct output
+
+AllGradientW = []#Reversed
+AllGradientB = []#Reversed
+
+LLGradientW = np.array([])
+LLGradientB = np.array([])
+#LLGradientW = np.empty([0, IS.GradientNN[len(IS.GradientNN) - 1]["weight"].shape[1]])
+#LLGradientB = np.empty([0, IS.GradientNN[len(IS.GradientNN) - 1]["bias"].shape[0]])
 
 
 #stores the gradient for the weights of all layers
@@ -45,24 +49,32 @@ def A_respect_to_Z(element):
 A_respect_to_Zvector = np.vectorize(A_respect_to_Z) #this is to be able to map to all elements in matrix
 
 def A_to_Z_ValuesCalc():
-    for x in range(len(NodeValues)):
-        A_to_Z_Values.append(A_respect_to_Zvector(NodeValues[x]))
+    #for x in range(len(NodeValues)):
+     A_to_Z_Values.append(A_respect_to_Zvector(NodeValues))
     
 #Node Values has been initialised by hand, must REVISIT
 #NodeValues = nodeCalc(IS.GradientNN, IS.pixelArr[0])
 
 def initialise(imageNum):
-    global NodeValues, lastC_to_A_Values
+    global NodeValues, lastC_to_A_Values, AllGradientW, AllGradientB
     NodeValues.clear()
-    NodeValues = nodeCalc(IS.GradientNN, IS.pixelArr, imageNum)
-
+    NodeValues = nodeCalc(IS.GradientNN, IS.pixelArr, imageNum)#calculates result, end nodes and intermediate nodes
+    
+    #NodeValues[len(NodeValues) - 1] takes the final , node values, not the intermediate ones
     lastC_to_A_Values = np.append(lastC_to_A_Values, C_respect_to_A(NodeValues[len(NodeValues) - 1], IS.labelArr2, imageNum))
 
     A_to_Z_ValuesCalc()
     Z_to_C_Values.append(np.multiply(A_to_Z_Values[len(A_to_Z_Values) - 1], lastC_to_A_Values))
 
+    #Gradient of last weights complete?
+    AllGradientW.append(np.multiply(Z_to_C_Values[len(Z_to_C_Values) - 1],  NodeValues[len(NodeValues) - 2]))
+    AllGradientB.append(Z_to_C_Values[len(Z_to_C_Values) - 1])
+#Need to calculate rest of gradient, sumation of results and effects
+    
+
 def BackP():
     global LLGradientW, LLGradientB
+    
     for N in range(Z_to_C_Values[0].size):
         tempArray2 = np.array([])
         tempArray2 = np.multiply(Z_to_C_Values[0][N], NodeValues[1])
@@ -88,6 +100,7 @@ def BackP():
     
 
 def functionTest():
+    print("Function Testing\n")
     print("Node Values[0]: ", NodeValues[0], "\nNode Values[1]: ", NodeValues[1], "\nNode Values[2]: ", NodeValues[2])
     print("Node Values[0]: ", NodeValues[0].shape, "\nNode Values[1]: ", \
           NodeValues[1].shape, "\nNode Values[2]: ", NodeValues[2].shape)

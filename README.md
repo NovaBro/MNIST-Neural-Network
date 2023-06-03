@@ -3,7 +3,7 @@ This project is still underdevelopment, and its purpose to get a greater underst
 There are three main files, MNIST_NN, InitialStart, and BackProp. 
 
 UserInputFile is the main driver program and gives a visual interface to create and change the neural network. 
-The GUI created also alows the user to draw thier own number for the neural network to classify!
+The GUI created also alows the user to draw thier own number on the blue canvas for the neural network to classify!
 Here is the the picture of the GUI (It may not be the prettiest I know) with default values.
 <img width="800" alt="Screen Shot 2023-06-03 at 7 56 32 PM" src="https://github.com/NovaBro/MNIST-Neural-Network/assets/57100555/aa46da5b-df73-4c1c-aeb7-b1a6099746e3">
 

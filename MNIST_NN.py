@@ -1,12 +1,14 @@
 import InitialStart as IS
-#import BackProp as BP
 import BackPropV2 as BPV2
 import numpy as np
 import matplotlib.pyplot as plt
-import sys, math
+import sys
+from tkinter import *
+from tkinter import ttk
 
-import cProfile
-
+wab = BPV2.makeWeightsAndBias()
+epochTime = 0
+AverageCost = 0
 def gradingResult(testingSet, testingSetSize, testingLabel, wab):
     correctHits = 0
     for i in range(testingSetSize):
@@ -14,19 +16,22 @@ def gradingResult(testingSet, testingSetSize, testingLabel, wab):
         outputVal = np.argmax(allNodes[3])
         if (testingLabel[i] == outputVal):
             correctHits += 1
-        print(f"Output array: \n{allNodes[3]}\nTrue value: {testingLabel[i]}\nMax value: {outputVal}")
+        #print(f"Output array: \n{allNodes[3]}\nTrue value: {testingLabel[i]}\nMax value: {outputVal}")
     
     correctHits = correctHits/testingSetSize
     print(f"Final Score: {correctHits}")
 
-def main():
+def neuralNetFunc(epochIN, learningRateIN, bachSizeIN, trainingDataPixelsSizeIN, testingPixelsSizeIN):
+    global wab, epochTime, AverageCost
     #---------(Settings)---------
-    dataSetSize = 1000
-    epoch = 30
-    learningRate = 1.5 #0.0000001 #
-    bachSize = 20 #must be a factor of (dataSetSize / 2)
+    epoch = epochIN #30
+    learningRate = learningRateIN #1.5 #0.0000001 #
+    bachSize = bachSizeIN #20 #must be a factor of (dataSetSize / 2)
 
+    trainingDataPixelsSize = trainingDataPixelsSizeIN #5000
+    testingPixelsSize = testingPixelsSizeIN #5000
     #----------------------------
+    dataSetSize = trainingDataPixelsSize + testingPixelsSize
 
     np.set_printoptions(suppress = True)
     np.set_printoptions(threshold = sys.maxsize)
@@ -34,7 +39,6 @@ def main():
     testIMG = open('/Users/MNIST Data/train-images-idx3-ubyte', 'rb')
     testLB = open('/Users/MNIST Data/train-labels.idx1-ubyte', 'rb')
 
-    
     dataSet = np.zeros((dataSetSize, 784))
 
     labelValueSetSize = dataSetSize
@@ -43,23 +47,18 @@ def main():
     labelSetSize = dataSetSize
     labelSet = np.zeros((labelSetSize, 10))
 
-    correctLastNodes = labelSet
-
     IS.STEP1(testIMG, testLB)
     IS.STEP2(labelValueSetSize, labelValueSet, testLB)
     IS.STEP3(dataSetSize, dataSet, testIMG)
     IS.STEP4(labelSetSize, labelSet, labelValueSet)
 
-    trainingDataPixelsSize = int(dataSetSize / 2)
+    
     trainingDataPixels = dataSet[0:trainingDataPixelsSize]
-
-    trainingLabelSize = int(dataSetSize / 2)
+    trainingLabelSize = trainingDataPixelsSize
     trainingLabels = labelSet[0:trainingLabelSize]
 
-    testingPixelsSize = dataSetSize - trainingDataPixelsSize
     testingPixels = dataSet[trainingDataPixelsSize:dataSetSize]
-
-    testingLabelSize = int(dataSetSize / 2)
+    #testingLabelSize = int(dataSetSize / 2)
     testingLabel = labelValueSet[trainingLabelSize:dataSetSize]
 
     testIMG.close()
@@ -87,6 +86,8 @@ def main():
                 wab[x] = wab[x] - changeInWab[x]
 
         yCost[t] = costValue / trainingDataPixelsSize
+        epochTime = t
+        AverageCost = yCost[t]
         print(f"Progress:\n-epoch: {t}\n-Average cost: {yCost[t]}")
                 
     gradingResult(testingPixels, testingPixelsSize, testingLabel, wab)
@@ -100,6 +101,3 @@ def main():
     ax2.set_ylabel("Cost Value\n(How bad the network is)")
     plt.show()
 
-#cProfile.run("main()", filename="ProfileOutput.dat")
-#filename="ProfileOutput.txt"
-main()

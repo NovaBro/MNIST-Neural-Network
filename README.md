@@ -20,3 +20,5 @@ BackPropV2 file is what improves the network. Currently, the back propogation do
 There are definitely things that can be done to increase speed and accuracy of the neural network, and I am still studing how to do these things.
 
 Through this project, I self taught python, numpy, gradient descent, directional derivatives, activation functions, and neural network performance.
+
+I also learned a lot from 3Blue1Browns Neural Network Playlist to make this project.
